@@ -65,7 +65,7 @@ def reaction_rate_1(T,V): # [ mol kg_cat^-1 s^-1]
 
 def reaction_rate_2(T,V): # [ mol kg_cat^-1 s^-1]
     return K_RWGS(T)*p_co2[V]*(1-p_co[V]*p_h2o[V]/(K_eq2(T)*p_h2[V]*p_co2[V]))/ \
-            ((1+K_c(T)*p_h2o[V]/p_h2[V]+K_a(T)*(p_h2[V]**0.5)+K_b(T)*p_h2o[V]))
+            (1+K_c(T)*p_h2o[V]/p_h2[V]+K_a(T)*(p_h2[V]**0.5)+K_b(T)*p_h2o[V])
 
 dH1_298K = -49.5*(10**3) #反応1での標準反応熱 [J mol^-1]
 dH2_298K = 41.2*(10**3)  #反応2での標準反応熱 [J mol^-1]
@@ -101,7 +101,7 @@ def Sum_FH(T,F_co,F_co2,F_h2,F_h2o,F_meoh):
     H_h2,err_h2=integrate.quad(Cp_h2,298,T)
     H_h2o,err_h2o=integrate.quad(Cp_h2o,298,T)
     H_meoh,err_meoh=integrate.quad(Cp_meoh,298,T)
-    return F_co*H_co+F_co2*H_co2+F_h2*H_h2++F_h2o*H_h2o+F_meoh*H_meoh
+    return F_co*H_co+F_co2*H_co2+F_h2*H_h2+F_h2o*H_h2o+F_meoh*H_meoh
 
 def initialize_molar_flow_rate_and_pressure_byPT(P0,T0,y_co,y_co2,y_h2,y_h2o,y_meoh):
     pressure[0] = P0 #全圧
