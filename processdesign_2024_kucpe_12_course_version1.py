@@ -65,7 +65,7 @@ def reaction_rate_1(T,V): # [ mol kg_cat^-1 s^-1]
 
 def reaction_rate_2(T,V): # [ mol kg_cat^-1 s^-1]
     return K_RWGS(T)*p_co2[V]*(1-p_co[V]*p_h2o[V]/(K_eq2(T)*p_h2[V]*p_co2[V]))/ \
-            ((1+K_c(T)*p_h2o[V]/p_h2[V]+K_a(T)*(p_h2[V]**0.5)+K_b(T)*p_h2o[V])**3)
+            ((1+K_c(T)*p_h2o[V]/p_h2[V]+K_a(T)*(p_h2[V]**0.5)+K_b(T)*p_h2o[V]))
 
 dH1_298K = -49.5*(10**3) #反応1での標準反応熱 [J mol^-1]
 dH2_298K = 41.2*(10**3)  #反応2での標準反応熱 [J mol^-1]
@@ -146,15 +146,15 @@ for n in range(n_step-1):
     xi1 = r1*catalyst*dv
     xi2 = r2*catalyst*dv
     #モル流量の更新 F_out = F_in + (a*r1+b*r2)dv
-    f_co[n+1]   = f_co[n]   + ( 0*r1*catalyst)*dv + ( 1*r2*catalyst)*dv
-    f_co2[n+1]  = f_co2[n]  + (-1*r1*catalyst)*dv + (-1*r2*catalyst)*dv
-    f_h2[n+1]   = f_h2[n]   + (-3*r1*catalyst)*dv + (-1*r2*catalyst)*dv
-    f_h2o[n+1]  = f_h2o[n]  + ( 1*r1*catalyst)*dv + ( 1*r2*catalyst)*dv
-    f_meoh[n+1] = f_meoh[n] + ( 1*r1*catalyst)*dv + ( 0*r2*catalyst)*dv
+    f_co[n+1]   = f_co[n]   + ( 0*xi1) + ( 1*xi2)
+    f_co2[n+1]  = f_co2[n]  + (-1*xi1) + (-1*xi2)
+    f_h2[n+1]   = f_h2[n]   + (-3*xi1) + (-1*xi2)
+    f_h2o[n+1]  = f_h2o[n]  + ( 1*xi1) + ( 1*xi2)
+    f_meoh[n+1] = f_meoh[n] + ( 1*xi1) + ( 0*xi2)
     #熱の変更
     def heat_balance(T):
         return Sum_FH(T,f_co[n+1],f_co2[n+1],f_h2[n+1],f_h2o[n+1],f_meoh[n+1])- \
-                Sum_FH(temperature[n],f_co[n+1],f_co2[n+1],f_h2[n+1],f_h2o[n+1],f_meoh[n+1])- \
+                Sum_FH(temperature[n],f_co[n+1],f_co2[n+1],f_h2[n+1],f_h2o[n+1],f_meoh[n+1])+ \
                 Heat_of_reaction(temperature[n],xi1,xi2)
 #   temperature[n+1]=temperature[n] #等温の場合
     temperature[n+1],*_ =fsolve(heat_balance,temperature[n]) #heat_balanece(T)=0 となるTを求める
