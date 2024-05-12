@@ -2,46 +2,43 @@ import numpy as np
 from scipy import integrate #熱容量の積分
 
 R = 8.314462 #[J K^-1 mol^-1]　# 気体定数
+Compounds = ("co","co2","h2","h2o","meoh") 
+
 
 class Reactor:
-    Pressure = 82 #[bar]
-    catalyst = 1100 #[kg m^-3]　# 触媒の充填密度
-    D = 44.5*(10**-3) #[m] # 反応器断面の直径
-    S = np.pi * (D**2) /4 *4801 #[m^2]反応器断面積
-    L = 7260*(10**-3) #[m] #反応器長さ
-    vmax = S*L # [m^3] # 反応器の大きさ
-
-    def __init__(self,Pressure,catalyst,D,L,n): # nは個数
-        print("reactor construction !")
-        self.Pressure = Pressure
-        self.catalyst = catalyst
-        self.D = D 
-        self.L = L
-        self.S = S = np.pi * (D**2)/4 *n
-        self.vmax = S*L
-
+    def __init__(self,Pressure=82,catalyst=1100,D=44.5*(10**-3),L=7260*(10**-3),n=4801): # nは個数
+        print("Let's costruct Reactor !")
+        self.Pressure = Pressure                # [bar] # 圧力
+        self.catalyst = catalyst                # [kg m^-3] # 触媒の充填密度
+        self.D        = D                       # [m] # 反応器断面の直径
+        self.L        = L                       # [m] #反応器長さ
+        self.S        = np.pi * (D**2)/4        # [m^2] # 反応器断面積
+        self.vmax     = self.S*L                     # [m^3] # 反応器の大きさ
+        print("Pressure : ", self.Pressure," bar\n",
+            "catalyst : ", self.catalyst, " kg / m^3\n",
+            "D : ", self.D, " m\n",
+            "L : ", self.L, " m\n",
+            "S : ", self.S, " m^2 \n",
+            "vmax : ",self.vmax, "m^3 \n" 
+        )
 
 class Flow:
-    Temperature = 0 #[K]
-    Compounds = ("co","co2","h2","h2o","meoh") 
-    Mass_flow =  {"co2": 0.00,"co2":0.00 ,"h2":0.00,"h2o":0.00,"meoh":0.00}
-
-    def __init__(self,Temperature,f_co,f_co2,f_h2,f_h2o,f_meoh):
-        self.Temperature = Temperature #[K]
-        self.Mass_flow["co"]   = f_co
-        self.Mass_flow["co2"]  = f_co2
-        self.Mass_flow["h2"]   = f_h2
-        self.Mass_flow["h2o"]  = f_h2o
-        self.Mass_flow["meoh"] = f_meoh
+    def __init__(self,f_co=0,f_co2=0,f_h2=0,f_h2o=0,f_meoh=0):
+        self.Moler_flow =dict() 
+        self.Moler_flow["co"]   = f_co
+        self.Moler_flow["co2"]  = f_co2
+        self.Moler_flow["h2"]   = f_h2
+        self.Moler_flow["h2o"]  = f_h2o
+        self.Moler_flow["meoh"] = f_meoh
 
     def y(self,material):#モル分率を返す
-        sum_mass_flow = 0
-        for compound in self.Compounds:
-            sum_mass_flow = sum_mass_flow + self.Mass_flow[compound]
-        if sum_mass_flow == 0:
-            print("sum_mass_flow is 0 !")
+        sum_Moler_flow = 0
+        for compound in Compounds:
+            sum_Moler_flow = sum_Moler_flow + self.Moler_flow[compound]
+        if sum_Moler_flow == 0:
+            print("sum_Moler_flow is 0 !")
             return 0
-        return self.Mass_flow[material]/sum_mass_flow
+        return self.Moler_flow[material]/sum_Moler_flow
 
 
 ## Reactions 
@@ -66,8 +63,7 @@ def K_eq1(T): # [bar^-2]
 def K_eq2(T): #[-]
     return 10**(-2073/T+2.029)
 
-def reaction_rate_1(reactor,flow): # [ mol kg_cat^-1 s^-1]
-    T = flow.Temperature 
+def reaction_rate_1(T,reactor,flow): # [ mol kg_cat^-1 s^-1]
     p_co = reactor.Pressure*flow.y("co")
     p_co2 = reactor.Pressure*flow.y("co2")
     p_h2 = reactor.Pressure*flow.y("h2")
@@ -76,8 +72,7 @@ def reaction_rate_1(reactor,flow): # [ mol kg_cat^-1 s^-1]
     return K_MeOH(T)*p_co2*p_h2*(1-p_meoh*p_h2o/(K_eq1(T)*(p_h2**3)*p_co2))/ \
             ((1+K_c(T)*p_h2o/p_h2+K_a(T)*(p_h2**0.5)+K_b(T)*p_h2o)**3)
 
-def reaction_rate_2(reactor,flow): # [ mol kg_cat^-1 s^-1]
-    T = flow.Temperature 
+def reaction_rate_2(T,reactor,flow): # [ mol kg_cat^-1 s^-1]
     p_co = reactor.Pressure*flow.y("co")
     p_co2 = reactor.Pressure*flow.y("co2")
     p_h2 = reactor.Pressure*flow.y("h2")
@@ -121,6 +116,6 @@ def Sum_FH(T,flow):
     H_h2,err_h2=integrate.quad(Cp_h2,298,T)
     H_h2o,err_h2o=integrate.quad(Cp_h2o,298,T)
     H_meoh,err_meoh=integrate.quad(Cp_meoh,298,T)
-    return flow.Mass_flow["co"]*H_co+flow.Mass_flow["co2"]*H_co2+\
-           flow.Mass_flow["h2"]*H_h2+flow.Mass_flow["h2o"]*H_h2o+flow.Mass_flow["meoh"]*H_meoh
+    return flow.Moler_flow["co"]*H_co+flow.Moler_flow["co2"]*H_co2+\
+           flow.Moler_flow["h2"]*H_h2+flow.Moler_flow["h2o"]*H_h2o+flow.Moler_flow["meoh"]*H_meoh
 
