@@ -60,7 +60,7 @@ def objective_func(Ft):# 原料流量入れた際の反応器の組成出口誤�
         flows[0].Moler_flow["co"]   = hy_ms.Item(2).MolarFlow.getValue("gmole/s")*hy_tmp_frac[3]
         flows[0].Moler_flow["co2"]  = F_co2
         flows[0].Moler_flow["h2"]   = F_h2
-        flows[0].Moler_flow["h2o"]  = hy_ms.Item(2).MolarFlow.getValue("gmole/s")**hy_tmp_frac[2]
+        flows[0].Moler_flow["h2o"]  = hy_ms.Item(2).MolarFlow.getValue("gmole/s")*hy_tmp_frac[2]
         flows[0].Moler_flow["meoh"] = hy_ms.Item(2).MolarFlow.getValue("gmole/s")*hy_tmp_frac[0]
         Temperature=np.full(n_step,485.0)
         for n in range(n_step-1):
@@ -81,9 +81,11 @@ def objective_func(Ft):# 原料流量入れた際の反応器の組成出口誤�
             Temperature[n+1],*_ =fsolve(heat_balance,Temperature[n]) #heat_balanece(T)=0 となるTを求める
         #終了条件の確認
         hy_tmp_frac = hy_ms.Item(0).ComponentMolarFraction.Values
-        err = (flows[-1].Moler_flow["co"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[3])**2 + \
+        err =(flows[-1].Moler_flow["meoh"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[0])**2 + \
+            (flows[-1].Moler_flow["co2"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[1])**2 + \
             (flows[-1].Moler_flow["h2o"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[2])**2 + \
-            (flows[-1].Moler_flow["meoh"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[0])**2 
+            (flows[-1].Moler_flow["co"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[3])**2 + \
+            (flows[-1].Moler_flow["h2"] - hy_ms.Item(0).MolarFlow.getValue("gmole/s")*hy_tmp_frac[4])**2
         print("err =",err)
         data = list() #微小体積毎の温度・モル流量をcsvfileで保存
         for n in range(n_step): #各体積での処理
