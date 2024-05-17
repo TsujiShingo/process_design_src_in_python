@@ -51,6 +51,7 @@ def objective_func(Ft):# 原料流量入れた際の反応器の組成出口誤�
     print("F_co2[mol/s]:",F_co2," F_h2[mol/s]",F_h2)
     err = 1
     simulate_cnt = 1
+    hy_ms.Item(0).Pressure.setValue(reactor.P*100)
     while (err > allowable_err) and (simulate_cnt < 10) :
         print(simulate_cnt)
         flows=list() 
@@ -97,6 +98,7 @@ def objective_func(Ft):# 原料流量入れた際の反応器の組成出口誤�
         hy_ms.Item(0).MolarFlow.setValue((flows[-1].Moler_flow["co"] + flows[-1].Moler_flow["co2"] + \
         flows[-1].Moler_flow["h2"] + flows[-1].Moler_flow["h2o"] +flows[-1].Moler_flow["meoh"] )/(10**3)) #? mol/s
         hy_ms.Item(0).ComponentMolarFraction.Values = (flows[-1].y("meoh"),flows[-1].y("co2"),flows[-1].y("h2o"),flows[-1].y("co"),flows[-1].y("h2")) 
+        hy_ms.Item(0).Temperature.setValue(Temperature[-1]-273.15) # セルシウス温度
         solver.CanSolve = True
         while solver.IsSolving == True: #解くまでまつ
             time.sleep(0.001) 
