@@ -120,7 +120,7 @@ def Sum_FH(T,flow):
     H_h2,err_h2=integrate.quad(Cp_h2,298,T)
     H_h2o,err_h2o=integrate.quad(Cp_h2o,298,T)
     H_meoh,err_meoh=integrate.quad(Cp_meoh,298,T)
-    H_n2,err_meoh=integrate.quad(Cp_meoh,298,T)
+    H_n2,err_meoh=integrate.quad(Cp_n2,298,T)
     return flow.Molar_flow["co"]*H_co+flow.Molar_flow["co2"]*H_co2+\
            flow.Molar_flow["h2"]*H_h2+flow.Molar_flow["h2o"]*H_h2o+\
            flow.Molar_flow["meoh"]*H_meoh+flow.Molar_flow["n2"]*H_n2
